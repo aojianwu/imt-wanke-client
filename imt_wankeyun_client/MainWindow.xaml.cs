@@ -131,15 +131,15 @@ namespace imt_wankeyun_client
                 if (e.Button == System.Windows.Forms.MouseButtons.Left) this.Show(o, e);
             });
 
-            try
-            {
-                tbk_version.Text = GetEdition();
-            }
-            catch (Exception ex)
-            {
-                tbk_version.Text = "开发版";
-                Debug.WriteLine("MainWindow error" + ex.Message);
-            }
+            //try
+            //{
+            //    tbk_version.Text = GetEdition();
+            //}
+            //catch (Exception ex)
+            //{
+            //    tbk_version.Text = "开发版";
+            //    Debug.WriteLine("MainWindow error" + ex.Message);
+            //}
             NotifyTimer = new DispatcherTimer();
             NotifyTimer.Interval = TimeSpan.FromMinutes(1);
             NotifyTimer.Tick += NotifyTimer_Tick;
@@ -324,12 +324,12 @@ namespace imt_wankeyun_client
             ShowInTaskbar = false;
             Opacity = 0;
         }
-        private void s_Click(object sender, RoutedEventArgs e)
-        {
-            aboutMenu.PlacementTarget = btu_menu;
-            aboutMenu.Placement = PlacementMode.Bottom;
-            aboutMenu.IsOpen = true;
-        }
+        //private void s_Click(object sender, RoutedEventArgs e)
+        //{
+        //    aboutMenu.PlacementTarget = btu_menu;
+        //    aboutMenu.Placement = PlacementMode.Bottom;
+        //    aboutMenu.IsOpen = true;
+        //}
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             AboutWindow a = new AboutWindow();
@@ -2108,8 +2108,8 @@ namespace imt_wankeyun_client
         }
         private void LoadDayHistroy()
         {
-            chart_dayHistory.DataSource = null;
-            chart_dayHistory.DataSource = dayIncomes;
+            //chart_dayHistory.DataSource = null;
+            //chart_dayHistory.DataSource = dayIncomes;
         }
         private async void btu_upgrade_Click(object sender, RoutedEventArgs e)
         {

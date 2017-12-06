@@ -26,7 +26,7 @@ namespace imt_wankeyun_client.Windows
             if (incomeHistory != null)
             {
                 var ih = incomeHistory.incomeArr.OrderBy(t => t.date).ToList();
-                chart_history.DataSource = ih;
+                //chart_history.DataSource = ih;
                 for (var i = 0; i < ih.Count; i++)
                 {
                     try

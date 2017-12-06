@@ -39,7 +39,7 @@
                     </GridView>
                 </ListView.View>
             </ListView>
-            <dxc:ChartControl x:Name="chart_history" HorizontalAlignment="Left" Margin="-7,0,0,0" VerticalAlignment="Top" Width="535">
+            <!--<dxc:ChartControl x:Name="chart_history" HorizontalAlignment="Left" Margin="-7,0,0,0" VerticalAlignment="Top" Width="535">
                 <dxc:ChartControl.Legend>
                     <dxc:Legend/>
                 </dxc:ChartControl.Legend>
@@ -47,7 +47,7 @@
                     <dxc:BarSideBySideSeries2D x:Name="series_income" DisplayName="收入" ShowInLegend="False"
                                            ArgumentDataMember="date" ValueDataMember="num"/>
                 </dxc:XYDiagram2D>
-            </dxc:ChartControl>
+            </dxc:ChartControl>-->
         </Grid>
         <Button x:Name="btu_close" Content="Button" HorizontalAlignment="Right" Height="28" Margin="386,0,0,250.4" VerticalAlignment="Top" Width="42" Style="{DynamicResource XButtonStyle}" Click="btu_close_Click"/>
     </Grid>
