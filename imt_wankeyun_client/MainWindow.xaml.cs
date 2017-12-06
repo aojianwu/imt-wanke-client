@@ -20,8 +20,7 @@ using System.Threading.Tasks;
 using imt_wankeyun_client.Entities.Account.Activate;
 using System.Windows.Documents;
 using imt_wankeyun_client.Entities.WKB;
-using imt_wankeyun_client.Entities.Control.RemoteDL;
-using System.Windows.Media.Imaging;
+
 using System.Deployment.Application;
 using Microsoft.VisualBasic;
 using System.Runtime.InteropServices;
@@ -33,7 +32,6 @@ using System.Windows.Navigation;
 using imt_wankeyun_client.Entities.Monitor;
 using imt_wankeyun_client.Entities.Uyulin;
 using imt_wankeyun_client.Entities.Miguan;
-using System.Windows.Controls.Primitives;
 
 namespace imt_wankeyun_client
 {
@@ -78,8 +76,7 @@ namespace imt_wankeyun_client
         LoadingWindow ld;
         internal static string password;
         private ObservableCollection<DeviceInfoVM> _deviceInfos = null;//设备信息
-        private ObservableCollection<DlTaskVM> _dlTasks = null;//正在下载列表
-        private ObservableCollection<DlTaskVM> _dlTasks_finished = null;//已下载列表
+
         List<Income> dayIncomes = new List<Income>();
         private ObservableCollection<FileVM> _partitions = null;
         DispatcherTimer NotifyTimer;
@@ -131,15 +128,6 @@ namespace imt_wankeyun_client
                 if (e.Button == System.Windows.Forms.MouseButtons.Left) this.Show(o, e);
             });
 
-            //try
-            //{
-            //    tbk_version.Text = GetEdition();
-            //}
-            //catch (Exception ex)
-            //{
-            //    tbk_version.Text = "开发版";
-            //    Debug.WriteLine("MainWindow error" + ex.Message);
-            //}
             NotifyTimer = new DispatcherTimer();
             NotifyTimer.Interval = TimeSpan.FromMinutes(1);
             NotifyTimer.Tick += NotifyTimer_Tick;
@@ -149,9 +137,7 @@ namespace imt_wankeyun_client
             PriceTimer = new DispatcherTimer();
             PriceTimer.Interval = TimeSpan.FromSeconds(1);
             PriceTimer.Tick += PriceTimer_Tick;
-            RemoteDlTimer = new DispatcherTimer();
-            RemoteDlTimer.Interval = TimeSpan.FromSeconds(5);
-            RemoteDlTimer.Tick += RemoteDlTimer_Tick;
+
             LoadSettings();//载入设置
         }
         private void PriceTimer_Tick(object sender, EventArgs e)
@@ -324,17 +310,7 @@ namespace imt_wankeyun_client
             ShowInTaskbar = false;
             Opacity = 0;
         }
-        //private void s_Click(object sender, RoutedEventArgs e)
-        //{
-        //    aboutMenu.PlacementTarget = btu_menu;
-        //    aboutMenu.Placement = PlacementMode.Bottom;
-        //    aboutMenu.IsOpen = true;
-        //}
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            AboutWindow a = new AboutWindow();
-            a.ShowDialog();
-        }
+
         void AutoHeaderWidth(ListView lv)
         {
             //调整列宽  
@@ -443,32 +419,7 @@ namespace imt_wankeyun_client
                 Debug.WriteLine("RefreshStatus error:" + ex.Message);
             }
         }
-        async void RefreshRemoteDlStatus()
-        {
-            if (curAccount != null)
-            {
-                Debug.WriteLine("curAccount=" + curAccount);
-                await RemoteDlLogin(curAccount);
-                if (await GetRemoteDlInfo(curAccount, 0))
-                {
-                    dlTasks = null;
-                    lv_remoteDlStatus.ItemsSource = dlTasks;
-                }
-            }
-        }
-        async void RefreshRemoteDlStatus_finished()
-        {
-            if (curAccount != null)
-            {
-                Debug.WriteLine("curAccount=" + curAccount);
-                await RemoteDlLogin(curAccount);
-                if (await GetRemoteDlInfo(curAccount, 1))
-                {
-                    dlTasks_finished = null;
-                    lv_remoteDlStatus_finished.ItemsSource = dlTasks_finished;
-                }
-            }
-        }
+
         async void RefreshFileStatus()
         {
             if (curAccount != null)
@@ -838,79 +789,7 @@ namespace imt_wankeyun_client
                     return false;
             }
         }
-        async Task<bool> GetRemoteDlInfo(string phone, int type)
-        {
-            HttpMessage resp = await ApiHelper.GetRemoteDlInfo(phone, type);
-            switch (resp.statusCode)
-            {
-                case HttpStatusCode.OK:
-                    if (resp.data == null)
-                    {
-                        return false;
-                    }
-                    var r = resp.data as RemoteDLResponse;
-                    if (r.rtn == 0)
-                    {
-                        if (type == 0)
-                        {
-                            if (!ApiHelper.remoteDlInfos.ContainsKey(phone))
-                            {
-                                ApiHelper.remoteDlInfos.Add(phone, r);
-                            }
-                            else
-                            {
-                                ApiHelper.remoteDlInfos[phone] = r;
-                            }
-                        }
-                        else
-                        {
-                            if (!ApiHelper.remoteDlInfos_finished.ContainsKey(phone))
-                            {
-                                ApiHelper.remoteDlInfos_finished.Add(phone, r);
-                            }
-                            else
-                            {
-                                ApiHelper.remoteDlInfos_finished[phone] = r;
-                            }
-                        }
-                        return true;
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"GetRemoteDlInfo-获取数据出错{r.rtn}:{r.rtn}");
-                    }
-                    return false;
-                default:
-                    Debug.WriteLine("GetRemoteDlInfo-网络异常错误！");
-                    //MessageBox.Show(resp.data.ToString(), "网络异常错误！");
-                    return false;
-            }
-        }
-        async Task<bool> RemoteDlLogin(string phone)
-        {
-            HttpMessage resp = await ApiHelper.RemoteDlLogin(phone);
-            switch (resp.statusCode)
-            {
-                case HttpStatusCode.OK:
-                    if (resp.data == null)
-                    {
-                        return false;
-                    }
-                    var r = resp.data as RemoteDlLoginResponse;
-                    if (r.rtn == 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"RemoteDlLogin-获取数据出错{r.rtn}:{r.rtn}");
-                    }
-                    return false;
-                default:
-                    Debug.WriteLine("RemoteDlLogin-网络异常错误！");
-                    return false;
-            }
-        }
+    
         async Task<string> SetDeviceName(string phone, string device_name)
         {
             HttpMessage resp = await ApiHelper.SetDeviceName(phone, device_name);
@@ -1153,13 +1032,7 @@ namespace imt_wankeyun_client
                     return null;
             }
         }
-        private void RemoteDlTimer_Tick(object sender, EventArgs e)
-        {
-            if (chk_refreshRemoteDl.IsChecked == true)
-            {
-                RefreshRemoteDlStatus();
-            }
-        }
+
         private async void StatusTimer_Tick(object sender, EventArgs e)
         {
             if (settings.autoRefresh)
@@ -1452,113 +1325,7 @@ namespace imt_wankeyun_client
                 this._deviceInfos = value;
             }
         }
-        public ObservableCollection<DlTaskVM> dlTasks
-        {
-            get
-            {
-                try
-                {
-                    if (this._dlTasks == null)
-                    {
-                        _dlTasks = new ObservableCollection<DlTaskVM>();
-                        if (!ApiHelper.remoteDlInfos.ContainsKey(curAccount))
-                        {
-                            return _dlTasks;
-                        }
-                        if (ApiHelper.remoteDlInfos[curAccount] == null)
-                        {
-                            return _dlTasks;
-                        }
-                        if (ApiHelper.remoteDlInfos[curAccount].tasks == null)
-                        {
-                            return _dlTasks;
-                        }
-                        tbx_taskCount.Text = ApiHelper.remoteDlInfos[curAccount].dlNum.ToString();
-                        tbx_taskFinishedCount.Text = ApiHelper.remoteDlInfos[curAccount].completeNum.ToString();
-                        foreach (var t in ApiHelper.remoteDlInfos[curAccount].tasks)
-                        {
-                            var st = t.state;
-                            if (st != 0 && st != 8 && st != 12)
-                            {
-                                st = 12;
-                            }
-                            var stateimg = new BitmapImage(new Uri($"pack://application:,,,/img/state_{st}.png"));
-                            var task = new DlTaskVM
-                            {
-                                name = t.name,
-                                state = t.state == 0 ? "添加中" : (t.state == 8 ? "正在等待" : "链接无效(130)"),
-                                state_color = t.state == 0 ? "DodgerBlue" : (t.state == 8 ? "LightBlue" : "Orange"),
-                                state_img = stateimg,
-                                speed = UtilHelper.ConvertToSpeedString(t.speed),
-                                progress = (t.progress / 100d).ToString("f2") + "%",
-                                id = t.id
-                            };
-                            _dlTasks.Add(task);
-                        }
-                    }
-                    return _dlTasks;
-                }
-                catch (Exception ex)
-                {
-                    Debug.Write("dlTasks-get-error " + ex.Message);
-                    return _dlTasks;
-                }
-            }
-            set
-            {
-                _dlTasks = value;
-            }
-        }
-        public ObservableCollection<DlTaskVM> dlTasks_finished
-        {
-            get
-            {
-                try
-                {
-                    if (this._dlTasks_finished == null)
-                    {
-                        _dlTasks_finished = new ObservableCollection<DlTaskVM>();
-                        if (!ApiHelper.remoteDlInfos_finished.ContainsKey(curAccount))
-                        {
-                            return _dlTasks_finished;
-                        }
-                        if (ApiHelper.remoteDlInfos_finished[curAccount] == null)
-                        {
-                            return _dlTasks_finished;
-                        }
-                        if (ApiHelper.remoteDlInfos_finished[curAccount].tasks == null)
-                        {
-                            return _dlTasks_finished;
-                        }
-                        tbx_taskCount.Text = ApiHelper.remoteDlInfos_finished[curAccount].dlNum.ToString();
-                        tbx_taskFinishedCount.Text = ApiHelper.remoteDlInfos_finished[curAccount].completeNum.ToString();
-                        foreach (var t in ApiHelper.remoteDlInfos_finished[curAccount].tasks)
-                        {
-                            var task = new DlTaskVM
-                            {
-                                name = t.name,
-                                state = "已完成",
-                                state_color = "Green",
-                                state_img = null,
-                                speed = UtilHelper.ConvertToSpeedString(t.speed),
-                                progress = (t.progress / 100d).ToString("f2") + "%",
-                            };
-                            _dlTasks_finished.Add(task);
-                        }
-                    }
-                    return _dlTasks_finished;
-                }
-                catch (Exception ex)
-                {
-                    Debug.Write("dlTasks-get-error " + ex.Message);
-                    return _dlTasks_finished;
-                }
-            }
-            set
-            {
-                _dlTasks_finished = value;
-            }
-        }
+ 
         internal ObservableCollection<FileVM> partitions
         {
             get
@@ -1866,31 +1633,8 @@ namespace imt_wankeyun_client
             {
                 RefreshFileStatus();
             }
-            else if (tbc_fileList.SelectedIndex == 3)
-            {
-                remoteDlTab_SelectionChanged(null, null);
-                RemoteDlTimer.Start();
-            }
-            else
-            {
-                RemoteDlTimer.Stop();
-            }
         }
-        private void btu_addRemoteDlTask_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsLogined())
-            {
-                MessageBox.Show("请先登陆", "提示");
-                return;
-            }
-            CreateTaskWindow crw = new CreateTaskWindow();
-            crw.ShowDialog();
-            RefreshRemoteDlStatus();
-        }
-        private void btu_refreshRemoteDlInfo_Click(object sender, RoutedEventArgs e)
-        {
-            remoteDlTab_SelectionChanged(null, null);
-        }
+
         private void cbx_curAccount_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cbx_curAccount.SelectedValue != null)
@@ -1919,11 +1663,7 @@ namespace imt_wankeyun_client
             this.Width = rcnormal.Width;
             this.Height = rcnormal.Height;
         }
-        private void link_showQQ_Click(object sender, RoutedEventArgs e)
-        {
-            AboutWindow a = new AboutWindow();
-            a.ShowDialog();
-        }
+
         private void btu_changePwd_Click(object sender, RoutedEventArgs e)
         {
             if (password == pwd_original.Password)
@@ -2017,21 +1757,7 @@ namespace imt_wankeyun_client
                 }
             }
         }
-        private void remoteDlTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (remoteDlTab.SelectedIndex == 0)
-            {
-                RefreshRemoteDlStatus();
-            }
-            else
-            {
-                RefreshRemoteDlStatus_finished();
-            }
-            if (e != null)
-            {
-                e.Handled = true;
-            }
-        }
+
         private async void btu_rename_Click(object sender, RoutedEventArgs e)
         {
             var btu = sender as Button;
@@ -2750,20 +2476,6 @@ namespace imt_wankeyun_client
                 }
             }
             SettingHelper.WriteSettings(settings, password);
-        }
-
-        private async void btu_startRemoteTask_Click(object sender, RoutedEventArgs e)
-        {
-            var btu = sender as Button;
-            var id = btu.CommandParameter as string;
-            await ApiHelper.StartRemoteDl(curAccount, id);
-        }
-
-        private async void btu_stopRemoteTask_Click(object sender, RoutedEventArgs e)
-        {
-            var btu = sender as Button;
-            var id = btu.CommandParameter as string;
-            await ApiHelper.StopRemoteDl(curAccount, id);
         }
     }
 }
