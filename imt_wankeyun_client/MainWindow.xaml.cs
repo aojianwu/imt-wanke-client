@@ -40,37 +40,37 @@ namespace imt_wankeyun_client
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Dictionary<string, bool> priceAbove = new Dictionary<string, bool>()
-        {
-            {"悠雨林",false },
-             {"玩客币社区",false },
-              {"cex-usdt",false },
-             {"cex-eth",false },
-             {"玩家网",false },
-        };
-        private Dictionary<string, bool> priceBelow = new Dictionary<string, bool>()
-        {
-            {"悠雨林",false },
-             {"玩客币社区",false },
-             {"cex-usdt",false },
-             {"cex-eth",false },
-             {"玩家网",false },
-        };
-        private Dictionary<string, double> lastPrice = new Dictionary<string, double>()
-        {
-            {"悠雨林",0 },
-             {"玩客币社区",0 },
-             {"cex-usdt",0 },
-             {"cex-eth",0 },
-             {"玩家网",0 },
-        };
+        //private Dictionary<string, bool> priceAbove = new Dictionary<string, bool>()
+        //{
+        //    {"悠雨林",false },
+        //     {"玩客币社区",false },
+        //      {"cex-usdt",false },
+        //     {"cex-eth",false },
+        //     {"玩家网",false },
+        //};
+        //private Dictionary<string, bool> priceBelow = new Dictionary<string, bool>()
+        //{
+        //    {"悠雨林",false },
+        //     {"玩客币社区",false },
+        //     {"cex-usdt",false },
+        //     {"cex-eth",false },
+        //     {"玩家网",false },
+        //};
+        //private Dictionary<string, double> lastPrice = new Dictionary<string, double>()
+        //{
+        //    {"悠雨林",0 },
+        //     {"玩客币社区",0 },
+        //     {"cex-usdt",0 },
+        //     {"cex-eth",0 },
+        //     {"玩家网",0 },
+        //};
         internal static string searchWord = "";
         int offlineNotifyTime = 1;//离线超过几分钟提醒
-        int priceRefTime;//距离上一次刷新的时间
-        UyulinWkc_DogeResponse uyulinPrice;
-        MiguanPriceResponse miguanPrice;
+        //int priceRefTime;//距离上一次刷新的时间
+        //UyulinWkc_DogeResponse uyulinPrice;
+        //MiguanPriceResponse miguanPrice;
         WkbInfo wkbInfo;
-        bool CanOpenNotify = false;
+        //bool CanOpenNotify = false;
         private System.Windows.Forms.NotifyIcon notifyIcon;
         bool IsHandRefreshing = false;
         LoadingWindow ld;
@@ -81,8 +81,8 @@ namespace imt_wankeyun_client
         private ObservableCollection<FileVM> _partitions = null;
         DispatcherTimer NotifyTimer;
         DispatcherTimer StatusTimer;
-        DispatcherTimer RemoteDlTimer;
-        DispatcherTimer PriceTimer;
+        //DispatcherTimer RemoteDlTimer;
+        //DispatcherTimer PriceTimer;
         internal static WankeSettings settings;
         internal static string curAccount = null;
         ObservableCollection<string> userList;
@@ -134,87 +134,87 @@ namespace imt_wankeyun_client
             StatusTimer = new DispatcherTimer();
             StatusTimer.Interval = TimeSpan.FromSeconds(15);
             StatusTimer.Tick += StatusTimer_Tick;
-            PriceTimer = new DispatcherTimer();
-            PriceTimer.Interval = TimeSpan.FromSeconds(1);
-            PriceTimer.Tick += PriceTimer_Tick;
+            //PriceTimer = new DispatcherTimer();
+            //PriceTimer.Interval = TimeSpan.FromSeconds(1);
+            //PriceTimer.Tick += PriceTimer_Tick;
 
             LoadSettings();//载入设置
         }
-        private void PriceTimer_Tick(object sender, EventArgs e)
-        {
-            var n = 6;
-            priceRefTime++;
-            if ((n - priceRefTime) == 0)
-            {
-                tbk_PriceAutoRefresh.Text = $"正在自动刷新";
-                RefreshPrice();
-                priceRefTime = 0;
-            }
-            else
-            {
-                tbk_PriceAutoRefresh.Text = $"{(n - priceRefTime)}秒后自动刷新";
-            }
-        }
+        //private void PriceTimer_Tick(object sender, EventArgs e)
+        //{
+        //    var n = 6;
+        //    priceRefTime++;
+        //    if ((n - priceRefTime) == 0)
+        //    {
+        //        tbk_PriceAutoRefresh.Text = $"正在自动刷新";
+        //        RefreshPrice();
+        //        priceRefTime = 0;
+        //    }
+        //    else
+        //    {
+        //        tbk_PriceAutoRefresh.Text = $"{(n - priceRefTime)}秒后自动刷新";
+        //    }
+        //}
 
-        async void RefreshPrice()
-        {
-            GetUyulinPrice();
-            GetMiguanPrice();
-            if (settings.priceAbove > 0)
-            {
-                for (int i = 0; i < lastPrice.Keys.Count; i++)
-                {
-                    var name = lastPrice.Keys.ElementAt(i);
-                    if (settings.priceNotifyItem.Contains(name))
-                    {
-                        if (lastPrice[name] != 0 && lastPrice[name] >= settings.priceAbove && !priceAbove[name])
-                        {
-                            priceAbove[name] = true;
-                            var msg = $"上涨提醒-{name}最新交易价格" + lastPrice[name] + "元";
-                            if (settings.mailNotify)
-                            {
-                                SendMail(msg);
-                            }
-                            if (settings.serverchanNotify)
-                            {
-                                SendServerChan(msg);
-                            }
-                        }
-                        if (lastPrice[name] != 0 && lastPrice[name] < settings.priceAbove)
-                        {
-                            priceAbove[name] = false;
-                        }
-                    }
-                }
-            }
-            if (settings.priceBelow > 0)
-            {
-                for (int i = 0; i < lastPrice.Keys.Count; i++)
-                {
-                    var name = lastPrice.Keys.ElementAt(i);
-                    if (settings.priceNotifyItem.Contains(name))
-                    {
-                        if (lastPrice[name] != 0 && lastPrice[name] <= settings.priceBelow && !priceBelow[name])
-                        {
-                            priceBelow[name] = true;
-                            var msg = $"下跌提醒-{name}最新交易价格" + lastPrice[name] + "元";
-                            if (settings.mailNotify)
-                            {
-                                SendMail(msg);
-                            }
-                            if (settings.serverchanNotify)
-                            {
-                                SendServerChan(msg);
-                            }
-                        }
-                        if (lastPrice[name] != 0 && lastPrice[name] > settings.priceBelow)
-                        {
-                            priceBelow[name] = false;
-                        }
-                    }
-                }
-            }
-        }
+        //async void RefreshPrice()
+        //{
+        //    GetUyulinPrice();
+        //    GetMiguanPrice();
+        //    if (settings.priceAbove > 0)
+        //    {
+        //        for (int i = 0; i < lastPrice.Keys.Count; i++)
+        //        {
+        //            var name = lastPrice.Keys.ElementAt(i);
+        //            if (settings.priceNotifyItem.Contains(name))
+        //            {
+        //                if (lastPrice[name] != 0 && lastPrice[name] >= settings.priceAbove && !priceAbove[name])
+        //                {
+        //                    priceAbove[name] = true;
+        //                    var msg = $"上涨提醒-{name}最新交易价格" + lastPrice[name] + "元";
+        //                    if (settings.mailNotify)
+        //                    {
+        //                        SendMail(msg);
+        //                    }
+        //                    if (settings.serverchanNotify)
+        //                    {
+        //                        SendServerChan(msg);
+        //                    }
+        //                }
+        //                if (lastPrice[name] != 0 && lastPrice[name] < settings.priceAbove)
+        //                {
+        //                    priceAbove[name] = false;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    if (settings.priceBelow > 0)
+        //    {
+        //        for (int i = 0; i < lastPrice.Keys.Count; i++)
+        //        {
+        //            var name = lastPrice.Keys.ElementAt(i);
+        //            if (settings.priceNotifyItem.Contains(name))
+        //            {
+        //                if (lastPrice[name] != 0 && lastPrice[name] <= settings.priceBelow && !priceBelow[name])
+        //                {
+        //                    priceBelow[name] = true;
+        //                    var msg = $"下跌提醒-{name}最新交易价格" + lastPrice[name] + "元";
+        //                    if (settings.mailNotify)
+        //                    {
+        //                        SendMail(msg);
+        //                    }
+        //                    if (settings.serverchanNotify)
+        //                    {
+        //                        SendServerChan(msg);
+        //                    }
+        //                }
+        //                if (lastPrice[name] != 0 && lastPrice[name] > settings.priceBelow)
+        //                {
+        //                    priceBelow[name] = false;
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
         private void TotallyHide(object sender, EventArgs e)
         {
             var r = MessageBox.Show("是否彻底隐藏？\n彻底隐藏后请通过任务管理器来结束本程序(imt_wankeyun_client.exe)", "确认", MessageBoxButton.YesNo);
@@ -447,171 +447,171 @@ namespace imt_wankeyun_client
                 RefreshStatus();
             }
         }
-        async Task<bool> GetUyulinPrice()
-        {
-            HttpMessage resp = await ApiHelper.Uyulin_Wkc_doge();
-            switch (resp.statusCode)
-            {
-                case HttpStatusCode.OK:
-                    var r = resp.data as UyulinWkc_DogeResponse;
-                    if (r.trades != null && r.trades.Count > 1)
-                    {
-                        uyulinPrice = r;
-                        if (r.trades[0] != null && r.trades[0].Count == 5)
-                        {
-                            var price = Convert.ToDouble(r.trades[0][2]);
-                            if (price >= lastPrice["悠雨林"])
-                            {
-                                tbk_uyulin_newPrice.Text = $"￥{price.ToString("f2")} ↑";
-                                tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Red);
-                            }
-                            else
-                            {
-                                tbk_uyulin_newPrice.Text = $"￥{price.ToString("f2")} ↓";
-                                tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Green);
-                            }
-                            if (price != lastPrice["悠雨林"])
-                            {
-                                lastPrice["悠雨林"] = price;
-                            }
-                        }
-                        else
-                        {
-                            tbk_uyulin_newPrice.Text = "暂无数据";
-                            tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
-                        }
-                        return true;
-                    }
-                    else
-                    {
-                        tbk_uyulin_newPrice.Text = "暂无数据";
-                        tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
-                        Debug.WriteLine("GetUyulinPrice-获取数据出错！");
-                    }
-                    return false;
-                default:
-                    tbk_uyulin_newPrice.Text = "暂无数据";
-                    tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
-                    Debug.WriteLine("GetUyulinPrice-网络异常错误！");
-                    //MessageBox.Show(resp.data.ToString(), "网络异常错误！");
-                    return false;
-            }
-        }
-        async Task<bool> GetMiguanPrice()
-        {
-            HttpMessage resp = await ApiHelper.GetMiguanPrice();
-            switch (resp.statusCode)
-            {
-                case HttpStatusCode.OK:
-                    var r = resp.data as MiguanPriceResponse;
-                    if (r.code == 200 && r.msg == "操作成功")
-                    {
-                        miguanPrice = r;
-                        if (r.result != null && r.result.Count > 0)
-                        {
-                            //玩客币社区
-                            var wkbsq = r.result.Find(t => t.dict != null && t.dict.name == "玩客币社区");
-                            if (wkbsq != null)
-                            {
-                                var price = Convert.ToDouble(wkbsq.cnyPrice);
-                                if (wkbsq.mark == 1)
-                                {
-                                    tbk_wkbsq_newPrice.Text = $"￥{price.ToString("f2")} ↑";
-                                    tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Red);
-                                }
-                                else
-                                {
-                                    tbk_wkbsq_newPrice.Text = $"￥{price.ToString("f2")} ↓";
-                                    tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Green);
-                                }
-                                if (price != lastPrice["玩客币社区"])
-                                {
-                                    lastPrice["玩客币社区"] = price;
-                                }
-                            }
-                            //cex-usdt
-                            var cex_usdt = r.result.Find(t => t.dict != null && t.dict.name == "cex-usdt");
-                            if (cex_usdt != null)
-                            {
-                                var price = Convert.ToDouble(cex_usdt.cnyPrice);
-                                if (cex_usdt.mark == 1)
-                                {
-                                    tbk_cex_usdt_newPrice.Text = $"￥{price.ToString("f2")} ↑";
-                                    tbk_cex_usdt_newPrice.Foreground = new SolidColorBrush(Colors.Red);
-                                }
-                                else
-                                {
-                                    tbk_cex_usdt_newPrice.Text = $"￥{price.ToString("f2")} ↓";
-                                    tbk_cex_usdt_newPrice.Foreground = new SolidColorBrush(Colors.Green);
-                                }
-                                if (price != lastPrice["cex-usdt"])
-                                {
-                                    lastPrice["cex-usdt"] = price;
-                                }
-                            }
-                            //cex-eth
-                            var cex_eth = r.result.Find(t => t.dict != null && t.dict.name == "cex-eth");
-                            if (cex_eth != null)
-                            {
-                                var price = Convert.ToDouble(cex_eth.cnyPrice);
-                                if (cex_eth.mark == 1)
-                                {
-                                    tbk_cex_eth_newPrice.Text = $"￥{price.ToString("f2")} ↑";
-                                    tbk_cex_eth_newPrice.Foreground = new SolidColorBrush(Colors.Red);
-                                }
-                                else
-                                {
-                                    tbk_cex_eth_newPrice.Text = $"￥{price.ToString("f2")} ↓";
-                                    tbk_cex_eth_newPrice.Foreground = new SolidColorBrush(Colors.Green);
-                                }
-                                if (price != lastPrice["cex-eth"])
-                                {
-                                    lastPrice["cex-eth"] = price;
-                                }
-                            }
-                            //玩家网
-                            var wjw = r.result.Find(t => t.dict != null && t.dict.name == "玩家网");
-                            if (wjw != null)
-                            {
-                                var price = Convert.ToDouble(wjw.cnyPrice);
-                                if (wjw.mark == 1)
-                                {
-                                    tbk_wjw_newPrice.Text = $"￥{price.ToString("f2")} ↑";
-                                    tbk_wjw_newPrice.Foreground = new SolidColorBrush(Colors.Red);
-                                }
-                                else
-                                {
-                                    tbk_wjw_newPrice.Text = $"￥{price.ToString("f2")} ↓";
-                                    tbk_wjw_newPrice.Foreground = new SolidColorBrush(Colors.Green);
-                                }
-                                if (price != lastPrice["玩家网"])
-                                {
-                                    lastPrice["玩家网"] = price;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //tbk_wkbsq_newPrice.Text = "暂无数据";
-                            //tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
-                        }
-                        return true;
-                    }
-                    else
-                    {
-                        //tbk_wkbsq_newPrice.Text = "暂无数据";
-                        //tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
-                        Debug.WriteLine("GetMiguanPrice-获取数据出错！");
-                    }
-                    return false;
-                default:
-                    //tbk_wkbsq_newPrice.Text = "暂无数据";
-                    //tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
-                    Debug.WriteLine("GetMiguanPrice-网络异常错误！");
-                    //MessageBox.Show(resp.data.ToString(), "网络异常错误！");
-                    return false;
-            }
-        }
+        //async Task<bool> GetUyulinPrice()
+        //{
+        //    HttpMessage resp = await ApiHelper.Uyulin_Wkc_doge();
+        //    switch (resp.statusCode)
+        //    {
+        //        case HttpStatusCode.OK:
+        //            var r = resp.data as UyulinWkc_DogeResponse;
+        //            if (r.trades != null && r.trades.Count > 1)
+        //            {
+        //                uyulinPrice = r;
+        //                if (r.trades[0] != null && r.trades[0].Count == 5)
+        //                {
+        //                    var price = Convert.ToDouble(r.trades[0][2]);
+        //                    if (price >= lastPrice["悠雨林"])
+        //                    {
+        //                        tbk_uyulin_newPrice.Text = $"￥{price.ToString("f2")} ↑";
+        //                        tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Red);
+        //                    }
+        //                    else
+        //                    {
+        //                        tbk_uyulin_newPrice.Text = $"￥{price.ToString("f2")} ↓";
+        //                        tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Green);
+        //                    }
+        //                    if (price != lastPrice["悠雨林"])
+        //                    {
+        //                        lastPrice["悠雨林"] = price;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    tbk_uyulin_newPrice.Text = "暂无数据";
+        //                    tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
+        //                }
+        //                return true;
+        //            }
+        //            else
+        //            {
+        //                tbk_uyulin_newPrice.Text = "暂无数据";
+        //                tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
+        //                Debug.WriteLine("GetUyulinPrice-获取数据出错！");
+        //            }
+        //            return false;
+        //        default:
+        //            tbk_uyulin_newPrice.Text = "暂无数据";
+        //            tbk_uyulin_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
+        //            Debug.WriteLine("GetUyulinPrice-网络异常错误！");
+        //            //MessageBox.Show(resp.data.ToString(), "网络异常错误！");
+        //            return false;
+        //    }
+        //}
+        //async Task<bool> GetMiguanPrice()
+        //{
+        //    HttpMessage resp = await ApiHelper.GetMiguanPrice();
+        //    switch (resp.statusCode)
+        //    {
+        //        case HttpStatusCode.OK:
+        //            var r = resp.data as MiguanPriceResponse;
+        //            if (r.code == 200 && r.msg == "操作成功")
+        //            {
+        //                miguanPrice = r;
+        //                if (r.result != null && r.result.Count > 0)
+        //                {
+        //                    //玩客币社区
+        //                    var wkbsq = r.result.Find(t => t.dict != null && t.dict.name == "玩客币社区");
+        //                    if (wkbsq != null)
+        //                    {
+        //                        var price = Convert.ToDouble(wkbsq.cnyPrice);
+        //                        if (wkbsq.mark == 1)
+        //                        {
+        //                            tbk_wkbsq_newPrice.Text = $"￥{price.ToString("f2")} ↑";
+        //                            tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Red);
+        //                        }
+        //                        else
+        //                        {
+        //                            tbk_wkbsq_newPrice.Text = $"￥{price.ToString("f2")} ↓";
+        //                            tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Green);
+        //                        }
+        //                        if (price != lastPrice["玩客币社区"])
+        //                        {
+        //                            lastPrice["玩客币社区"] = price;
+        //                        }
+        //                    }
+        //                    //cex-usdt
+        //                    var cex_usdt = r.result.Find(t => t.dict != null && t.dict.name == "cex-usdt");
+        //                    if (cex_usdt != null)
+        //                    {
+        //                        var price = Convert.ToDouble(cex_usdt.cnyPrice);
+        //                        if (cex_usdt.mark == 1)
+        //                        {
+        //                            tbk_cex_usdt_newPrice.Text = $"￥{price.ToString("f2")} ↑";
+        //                            tbk_cex_usdt_newPrice.Foreground = new SolidColorBrush(Colors.Red);
+        //                        }
+        //                        else
+        //                        {
+        //                            tbk_cex_usdt_newPrice.Text = $"￥{price.ToString("f2")} ↓";
+        //                            tbk_cex_usdt_newPrice.Foreground = new SolidColorBrush(Colors.Green);
+        //                        }
+        //                        if (price != lastPrice["cex-usdt"])
+        //                        {
+        //                            lastPrice["cex-usdt"] = price;
+        //                        }
+        //                    }
+        //                    //cex-eth
+        //                    var cex_eth = r.result.Find(t => t.dict != null && t.dict.name == "cex-eth");
+        //                    if (cex_eth != null)
+        //                    {
+        //                        var price = Convert.ToDouble(cex_eth.cnyPrice);
+        //                        if (cex_eth.mark == 1)
+        //                        {
+        //                            tbk_cex_eth_newPrice.Text = $"￥{price.ToString("f2")} ↑";
+        //                            tbk_cex_eth_newPrice.Foreground = new SolidColorBrush(Colors.Red);
+        //                        }
+        //                        else
+        //                        {
+        //                            tbk_cex_eth_newPrice.Text = $"￥{price.ToString("f2")} ↓";
+        //                            tbk_cex_eth_newPrice.Foreground = new SolidColorBrush(Colors.Green);
+        //                        }
+        //                        if (price != lastPrice["cex-eth"])
+        //                        {
+        //                            lastPrice["cex-eth"] = price;
+        //                        }
+        //                    }
+        //                    //玩家网
+        //                    var wjw = r.result.Find(t => t.dict != null && t.dict.name == "玩家网");
+        //                    if (wjw != null)
+        //                    {
+        //                        var price = Convert.ToDouble(wjw.cnyPrice);
+        //                        if (wjw.mark == 1)
+        //                        {
+        //                            tbk_wjw_newPrice.Text = $"￥{price.ToString("f2")} ↑";
+        //                            tbk_wjw_newPrice.Foreground = new SolidColorBrush(Colors.Red);
+        //                        }
+        //                        else
+        //                        {
+        //                            tbk_wjw_newPrice.Text = $"￥{price.ToString("f2")} ↓";
+        //                            tbk_wjw_newPrice.Foreground = new SolidColorBrush(Colors.Green);
+        //                        }
+        //                        if (price != lastPrice["玩家网"])
+        //                        {
+        //                            lastPrice["玩家网"] = price;
+        //                        }
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    //tbk_wkbsq_newPrice.Text = "暂无数据";
+        //                    //tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
+        //                }
+        //                return true;
+        //            }
+        //            else
+        //            {
+        //                //tbk_wkbsq_newPrice.Text = "暂无数据";
+        //                //tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
+        //                Debug.WriteLine("GetMiguanPrice-获取数据出错！");
+        //            }
+        //            return false;
+        //        default:
+        //            //tbk_wkbsq_newPrice.Text = "暂无数据";
+        //            //tbk_wkbsq_newPrice.Foreground = new SolidColorBrush(Colors.Goldenrod);
+        //            Debug.WriteLine("GetMiguanPrice-网络异常错误！");
+        //            //MessageBox.Show(resp.data.ToString(), "网络异常错误！");
+        //            return false;
+        //    }
+        //}
         async Task<bool> WkbInfoQuery()
         {
             HttpMessage resp = await ApiHelper.WkbInfoQuery();
@@ -1214,7 +1214,7 @@ namespace imt_wankeyun_client
                                         else
                                         {
                                             //通知设备恢复在线
-                                            SendNotifyMail(di);
+                                            //SendNotifyMail(di);
                                             SendNotifyServerChan(di);
                                         }
                                     }
@@ -1230,7 +1230,7 @@ namespace imt_wankeyun_client
                                 var di = DiList.Find(t => t.phone == ot.Key);
                                 if (di != null)
                                 {
-                                    SendNotifyMail(di);
+                                    //SendNotifyMail(di);
                                     SendNotifyServerChan(di);
                                 }
                                 OfflineTime.Remove(ot.Key);
@@ -1443,47 +1443,47 @@ namespace imt_wankeyun_client
                 settings.SortBy = "设备名称";
                 SettingHelper.WriteSettings(settings, password);
             }
-            if (settings.priceNotifyItem == null)
-            {
-                settings.priceNotifyItem = new List<string>
-                {
-                     "悠雨林",
-              "cex-usdt",
-             "cex-eth",
-             "玩客币社区",
-             "玩家网"
-                };
-                SettingHelper.WriteSettings(settings, password);
-            }
-            chk_uyulin_notify.IsChecked = settings.priceNotifyItem.Contains("悠雨林");
-            chk_cex_usdt_notify.IsChecked = settings.priceNotifyItem.Contains("cex-usdt");
-            chk_cex_eth_notify.IsChecked = settings.priceNotifyItem.Contains("cex-eth");
-            chk_wkbsq_notify.IsChecked = settings.priceNotifyItem.Contains("玩客币社区");
-            chk_wjw_notify.IsChecked = settings.priceNotifyItem.Contains("玩家网");
+            //if (settings.priceNotifyItem == null)
+            //{
+            //    settings.priceNotifyItem = new List<string>
+            //    {
+            //         "悠雨林",
+            //  "cex-usdt",
+            // "cex-eth",
+            // "玩客币社区",
+            // "玩家网"
+            //    };
+            //    SettingHelper.WriteSettings(settings, password);
+            //}
+            //chk_uyulin_notify.IsChecked = settings.priceNotifyItem.Contains("悠雨林");
+            //chk_cex_usdt_notify.IsChecked = settings.priceNotifyItem.Contains("cex-usdt");
+            //chk_cex_eth_notify.IsChecked = settings.priceNotifyItem.Contains("cex-eth");
+            //chk_wkbsq_notify.IsChecked = settings.priceNotifyItem.Contains("玩客币社区");
+            //chk_wjw_notify.IsChecked = settings.priceNotifyItem.Contains("玩家网");
 
-            cbx_autoTibi.SelectedIndex = settings.autoTibi;
-            grid_mailNotify.DataContext = settings.mailAccount;
-            grid_serverchan.DataContext = settings;
-            grid_refreshSetting.DataContext = settings;
-            tbx_mailPwd.Password = settings.mailAccount.password;
-            tbx_priceAboce.Text = settings.priceAbove.ToString();
-            tbx_priceBelow.Text = settings.priceBelow.ToString();
-            if (settings.mailNotify)
-            {
-                btu_mailNotify.Content = "关闭提醒";
-            }
-            else
-            {
-                btu_mailNotify.Content = "开启提醒";
-            }
-            if (settings.serverchanNotify)
-            {
-                btu_serverchanNotify.Content = "关闭提醒";
-            }
-            else
-            {
-                btu_serverchanNotify.Content = "开启提醒";
-            }
+            //cbx_autoTibi.SelectedIndex = settings.autoTibi;
+            //grid_mailNotify.DataContext = settings.mailAccount;
+            //grid_serverchan.DataContext = settings;
+            //grid_refreshSetting.DataContext = settings;
+            //tbx_mailPwd.Password = settings.mailAccount.password;
+            //tbx_priceAboce.Text = settings.priceAbove.ToString();
+            //tbx_priceBelow.Text = settings.priceBelow.ToString();
+            //if (settings.mailNotify)
+            //{
+            //    btu_mailNotify.Content = "关闭提醒";
+            //}
+            //else
+            //{
+            //    btu_mailNotify.Content = "开启提醒";
+            //}
+            //if (settings.serverchanNotify)
+            //{
+            //    btu_serverchanNotify.Content = "关闭提醒";
+            //}
+            //else
+            //{
+            //    btu_serverchanNotify.Content = "开启提醒";
+            //}
             grid_main.IsEnabled = false;
             if (settings.loginDatas != null && settings.loginDatas.Count > 0)
             {
@@ -1516,7 +1516,7 @@ namespace imt_wankeyun_client
                 SendDailyNotifyServerChan();
             }
             NotifyTimer.Start();
-            PriceTimer.Start();
+            //PriceTimer.Start();
         }
         async Task UserLogin(LoginData ld)
         {
@@ -1808,11 +1808,11 @@ namespace imt_wankeyun_client
             {
                 LoadWkbInfo();
             }
-            else if (tab_account.SelectedIndex == 3)
-            {
-                RefreshPrice();
-                PriceTimer.Start();
-            }
+            //else if (tab_account.SelectedIndex == 3)
+            //{
+            //    RefreshPrice();
+            //    PriceTimer.Start();
+            //}
             else
             {
             }
@@ -1903,121 +1903,121 @@ namespace imt_wankeyun_client
         {
             SendMessage(_HwndSource.Handle, WM_SYSCOMMAND, (IntPtr)(61440 + direction), IntPtr.Zero);
         }
-        private void btu_mailNotify_Click(object sender, RoutedEventArgs e)
-        {
-            if (!settings.mailNotify)
-            {
-                if (!CanOpenNotify)
-                {
-                    MessageBox.Show("请先发送测试邮件然后保存设置，\n确认可以发送成功，才能开启提醒", "提示");
-                    return;
-                }
-            }
-            settings.mailNotify = !settings.mailNotify;
-            SettingHelper.WriteSettings(settings, password);
-            if (settings.mailNotify)
-            {
-                btu_mailNotify.Content = "关闭提醒";
-                SendDailyNotifyMail();
-            }
-            else
-            {
-                btu_mailNotify.Content = "开启提醒";
-            }
-        }
-        private void btu_saveMail_Click(object sender, RoutedEventArgs e)
-        {
-            settings.mailAccount.password = tbx_mailPwd.Password;
-            SettingHelper.WriteSettings(settings, password);
-            MessageBox.Show("设置保存成功！", "提示");
-        }
-        private async void btu_sendTestMail_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (tbx_mailUsername.Text.Trim() == "")
-                {
-                    MessageBox.Show("用户名不能为空！", "提示");
-                    return;
-                }
-                if (tbx_mailPwd.Password.Trim() == "")
-                {
-                    MessageBox.Show("密码不能为空！", "提示");
-                    return;
-                }
-                if (tbx_smtpServer.Text.Trim() == "")
-                {
-                    MessageBox.Show("SMTP服务器不能为空！", "提示");
-                    return;
-                }
-                if (tbx_mailPort.Text.Trim() == "")
-                {
-                    MessageBox.Show("SMTP服务器端口不能为空！", "提示");
-                    return;
-                }
-                MailHelper.username = tbx_mailUsername.Text.Trim();
-                MailHelper.password = tbx_mailPwd.Password.Trim();
-                MailHelper.smtpServer = tbx_smtpServer.Text.Trim();
-                MailHelper.port = Convert.ToInt32(tbx_mailPort.Text.Trim());
-                var ct = "这是一封测试邮件，测试提醒邮件能不能发送<br/>测试时间：" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
-                var result = await MailHelper.SendEmail(settings.mailAccount.mailTo, "测试邮件-不朽玩客云客户端", ct);
-                MessageBox.Show(result, "提示");
-                if (result == "发送成功")
-                {
-                    CanOpenNotify = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("错误！" + ex.Message, "提示");
-            }
-        }
-        private async void SendNotifyMail(DeviceInfoVM di)
-        {
-            if (settings.mailNotify)
-            {
-                MailHelper.username = settings.mailAccount.username;
-                MailHelper.password = settings.mailAccount.password;
-                MailHelper.smtpServer = settings.mailAccount.smtpServer;
-                MailHelper.port = settings.mailAccount.port;
-                var title = di.status == "在线" ? $"{di.phone} {di.device_name}恢复在线-不朽玩客云客户端" : $"{di.phone} {di.device_name}离线{offlineNotifyTime}分钟了-不朽玩客云客户端";
-                var result = await MailHelper.SendEmail(settings.mailAccount.mailTo, title, GetNotifyHtml(di));
-                Debug.WriteLine($"SendNotifyMail {di.phone}:" + result);
-            }
-        }
-        string GetNotifyHtml(DeviceInfoVM di)
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<html>");
-            var status = di.status == "在线" ? $"恢复在线" : $"离线";
-            sb.Append($"<p style='display:inline;'>账号{di.phone}的设备</p><p style='display:inline;color:{(di.status == "在线" ? "green" : "red")};'>{status}</p>");
-            sb.Append($"<br/>");
-            sb.Append($"时间：{DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString()}");
-            sb.Append($"<br/>");
-            sb.Append($"设备详情：");
-            sb.Append($"<br/>");
-            sb.Append(Properties.Resources.TableStart);
-            sb.Append(Properties.Resources.TableContent.Replace("title", "名称").Replace("value", di.device_name));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "SN").Replace("value", di.device_sn));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "激活状态").Replace("value", di.isActived));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "内网IP").Replace("value", di.lan_ip));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "外网IP").Replace("value", di.ip));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "昨日挖矿").Replace("value", di.yes_wkb.ToString()));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "可提币").Replace("value", di.ketiWkb.ToString()));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "总收入").Replace("value", di.totalIncome.ToString()));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "硬盘容量").Replace("value", di.volume));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "CDN上传速度").Replace("value", di.dcdn_upload_speed));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "CDN下载速度").Replace("value", di.dcdn_download_speed));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "UPNP状态").Replace("value", di.dcdn_upnp_status));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "UPNP消息").Replace("value", di.dcdn_upnp_message));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "固件版本").Replace("value", di.system_version));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "固件能否升级").Replace("value", di.upgradeable));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "网络运营商").Replace("value", di.ip_info));
-            sb.Append(Properties.Resources.TableContent.Replace("title", "绑定的玩客币地址").Replace("value", di.wkbAddr));
-            sb.Append(Properties.Resources.TableEnd);
-            sb.Append("</html>");
-            return sb.ToString();
-        }
+        //private void btu_mailNotify_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (!settings.mailNotify)
+        //    {
+        //        if (!CanOpenNotify)
+        //        {
+        //            MessageBox.Show("请先发送测试邮件然后保存设置，\n确认可以发送成功，才能开启提醒", "提示");
+        //            return;
+        //        }
+        //    }
+        //    settings.mailNotify = !settings.mailNotify;
+        //    SettingHelper.WriteSettings(settings, password);
+        //    if (settings.mailNotify)
+        //    {
+        //        btu_mailNotify.Content = "关闭提醒";
+        //        SendDailyNotifyMail();
+        //    }
+        //    else
+        //    {
+        //        btu_mailNotify.Content = "开启提醒";
+        //    }
+        //}
+        //private void btu_saveMail_Click(object sender, RoutedEventArgs e)
+        //{
+        //    settings.mailAccount.password = tbx_mailPwd.Password;
+        //    SettingHelper.WriteSettings(settings, password);
+        //    MessageBox.Show("设置保存成功！", "提示");
+        //}
+        //private async void btu_sendTestMail_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        if (tbx_mailUsername.Text.Trim() == "")
+        //        {
+        //            MessageBox.Show("用户名不能为空！", "提示");
+        //            return;
+        //        }
+        //        if (tbx_mailPwd.Password.Trim() == "")
+        //        {
+        //            MessageBox.Show("密码不能为空！", "提示");
+        //            return;
+        //        }
+        //        if (tbx_smtpServer.Text.Trim() == "")
+        //        {
+        //            MessageBox.Show("SMTP服务器不能为空！", "提示");
+        //            return;
+        //        }
+        //        if (tbx_mailPort.Text.Trim() == "")
+        //        {
+        //            MessageBox.Show("SMTP服务器端口不能为空！", "提示");
+        //            return;
+        //        }
+        //        MailHelper.username = tbx_mailUsername.Text.Trim();
+        //        MailHelper.password = tbx_mailPwd.Password.Trim();
+        //        MailHelper.smtpServer = tbx_smtpServer.Text.Trim();
+        //        MailHelper.port = Convert.ToInt32(tbx_mailPort.Text.Trim());
+        //        var ct = "这是一封测试邮件，测试提醒邮件能不能发送<br/>测试时间：" + DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
+        //        var result = await MailHelper.SendEmail(settings.mailAccount.mailTo, "测试邮件-不朽玩客云客户端", ct);
+        //        MessageBox.Show(result, "提示");
+        //        if (result == "发送成功")
+        //        {
+        //            CanOpenNotify = true;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show("错误！" + ex.Message, "提示");
+        //    }
+        //}
+        //private async void SendNotifyMail(DeviceInfoVM di)
+        //{
+        //    if (settings.mailNotify)
+        //    {
+        //        MailHelper.username = settings.mailAccount.username;
+        //        MailHelper.password = settings.mailAccount.password;
+        //        MailHelper.smtpServer = settings.mailAccount.smtpServer;
+        //        MailHelper.port = settings.mailAccount.port;
+        //        var title = di.status == "在线" ? $"{di.phone} {di.device_name}恢复在线-不朽玩客云客户端" : $"{di.phone} {di.device_name}离线{offlineNotifyTime}分钟了-不朽玩客云客户端";
+        //        var result = await MailHelper.SendEmail(settings.mailAccount.mailTo, title, GetNotifyHtml(di));
+        //        Debug.WriteLine($"SendNotifyMail {di.phone}:" + result);
+        //    }
+        //}
+        //string GetNotifyHtml(DeviceInfoVM di)
+        //{
+        //    StringBuilder sb = new StringBuilder();
+        //    sb.Append("<html>");
+        //    var status = di.status == "在线" ? $"恢复在线" : $"离线";
+        //    sb.Append($"<p style='display:inline;'>账号{di.phone}的设备</p><p style='display:inline;color:{(di.status == "在线" ? "green" : "red")};'>{status}</p>");
+        //    sb.Append($"<br/>");
+        //    sb.Append($"时间：{DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString()}");
+        //    sb.Append($"<br/>");
+        //    sb.Append($"设备详情：");
+        //    sb.Append($"<br/>");
+        //    sb.Append(Properties.Resources.TableStart);
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "名称").Replace("value", di.device_name));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "SN").Replace("value", di.device_sn));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "激活状态").Replace("value", di.isActived));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "内网IP").Replace("value", di.lan_ip));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "外网IP").Replace("value", di.ip));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "昨日挖矿").Replace("value", di.yes_wkb.ToString()));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "可提币").Replace("value", di.ketiWkb.ToString()));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "总收入").Replace("value", di.totalIncome.ToString()));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "硬盘容量").Replace("value", di.volume));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "CDN上传速度").Replace("value", di.dcdn_upload_speed));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "CDN下载速度").Replace("value", di.dcdn_download_speed));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "UPNP状态").Replace("value", di.dcdn_upnp_status));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "UPNP消息").Replace("value", di.dcdn_upnp_message));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "固件版本").Replace("value", di.system_version));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "固件能否升级").Replace("value", di.upgradeable));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "网络运营商").Replace("value", di.ip_info));
+        //    sb.Append(Properties.Resources.TableContent.Replace("title", "绑定的玩客币地址").Replace("value", di.wkbAddr));
+        //    sb.Append(Properties.Resources.TableEnd);
+        //    sb.Append("</html>");
+        //    return sb.ToString();
+        //}
         string GetNotifyMarkdown(DeviceInfoVM di)
         {
             StringBuilder sb = new StringBuilder();
@@ -2242,38 +2242,38 @@ namespace imt_wankeyun_client
                 Debug.WriteLine($"SendNotifyServerChan {di.phone}:" + result);
             }
         }
-        private async void btu_serverchanNotify_Click(object sender, RoutedEventArgs e)
-        {
-            if (settings.serverchanNotify != true)
-            {
-                if (tbx_serverchan.Text.Trim() == "")
-                {
-                    MessageBox.Show("SCKEY不能为空！", "提示");
-                    return;
-                }
-                var sckey = tbx_serverchan.Text.Trim();
-                var time = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
-                var r = await ServerChanNotify(sckey, "不朽玩客云客户端-测试推送", "推送服务开启成功 " + time);
-                if (r == "推送成功")
-                {
-                    settings.serverchanNotify = true;
-                    settings.SCKEY = sckey;
-                    SettingHelper.WriteSettings(settings, password);
-                    MessageBox.Show("Server酱推送服务开启成功", "恭喜");
-                    btu_serverchanNotify.Content = "关闭推送";
-                }
-                else
-                {
-                    MessageBox.Show(r, "错误");
-                }
-            }
-            else
-            {
-                settings.serverchanNotify = false;
-                SettingHelper.WriteSettings(settings, password);
-                btu_serverchanNotify.Content = "开启推送";
-            }
-        }
+        //private async void btu_serverchanNotify_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (settings.serverchanNotify != true)
+        //    {
+        //        if (tbx_serverchan.Text.Trim() == "")
+        //        {
+        //            MessageBox.Show("SCKEY不能为空！", "提示");
+        //            return;
+        //        }
+        //        var sckey = tbx_serverchan.Text.Trim();
+        //        var time = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToShortTimeString();
+        //        var r = await ServerChanNotify(sckey, "不朽玩客云客户端-测试推送", "推送服务开启成功 " + time);
+        //        if (r == "推送成功")
+        //        {
+        //            settings.serverchanNotify = true;
+        //            settings.SCKEY = sckey;
+        //            SettingHelper.WriteSettings(settings, password);
+        //            MessageBox.Show("Server酱推送服务开启成功", "恭喜");
+        //            btu_serverchanNotify.Content = "关闭推送";
+        //        }
+        //        else
+        //        {
+        //            MessageBox.Show(r, "错误");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        settings.serverchanNotify = false;
+        //        SettingHelper.WriteSettings(settings, password);
+        //        btu_serverchanNotify.Content = "开启推送";
+        //    }
+        //}
         private void btu_saveRefresh_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -2360,20 +2360,20 @@ namespace imt_wankeyun_client
             LoginManyWindow lmw = new LoginManyWindow();
             lmw.ShowDialog();
         }
-        private void btu_savePriceNotify_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                settings.priceAbove = Convert.ToDouble(tbx_priceAboce.Text.Trim());
-                settings.priceBelow = Convert.ToDouble(tbx_priceBelow.Text.Trim());
-                SettingHelper.WriteSettings(settings, password);
-                MessageBox.Show("保存设置成功！", "提示");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "错误");
-            }
-        }
+        //private void btu_savePriceNotify_Click(object sender, RoutedEventArgs e)
+        //{
+        //    try
+        //    {
+        //        settings.priceAbove = Convert.ToDouble(tbx_priceAboce.Text.Trim());
+        //        settings.priceBelow = Convert.ToDouble(tbx_priceBelow.Text.Trim());
+        //        SettingHelper.WriteSettings(settings, password);
+        //        MessageBox.Show("保存设置成功！", "提示");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show(ex.Message, "错误");
+        //    }
+        //}
         private void btu_sort_Click(object sender, RoutedEventArgs e)
         {
             SortWindow sw = new SortWindow();
@@ -2383,99 +2383,99 @@ namespace imt_wankeyun_client
             AutoHeaderWidth(lv_DeviceStatus);
         }
 
-        private void chk_uyulin_notify_Click(object sender, RoutedEventArgs e)
-        {
-            if (chk_uyulin_notify.IsChecked == true)
-            {
-                if (!settings.priceNotifyItem.Contains("悠雨林"))
-                {
-                    settings.priceNotifyItem.Add("悠雨林");
-                }
-            }
-            else
-            {
-                if (settings.priceNotifyItem.Contains("悠雨林"))
-                {
-                    settings.priceNotifyItem.Remove("悠雨林");
-                }
-            }
-            SettingHelper.WriteSettings(settings, password);
-        }
+        //private void chk_uyulin_notify_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (chk_uyulin_notify.IsChecked == true)
+        //    {
+        //        if (!settings.priceNotifyItem.Contains("悠雨林"))
+        //        {
+        //            settings.priceNotifyItem.Add("悠雨林");
+        //        }
+        //    }
+        //    else
+        //    {
+        //        if (settings.priceNotifyItem.Contains("悠雨林"))
+        //        {
+        //            settings.priceNotifyItem.Remove("悠雨林");
+        //        }
+        //    }
+        //    SettingHelper.WriteSettings(settings, password);
+        //}
 
-        private void chk_cex_usdt_notify_Click(object sender, RoutedEventArgs e)
-        {
-            if (chk_cex_usdt_notify.IsChecked == true)
-            {
-                if (!settings.priceNotifyItem.Contains("cex-usdt"))
-                {
-                    settings.priceNotifyItem.Add("cex-usdt");
-                }
-            }
-            else
-            {
-                if (settings.priceNotifyItem.Contains("cex-usdt"))
-                {
-                    settings.priceNotifyItem.Remove("cex-usdt");
-                }
-            }
-            SettingHelper.WriteSettings(settings, password);
-        }
+        //    private void chk_cex_usdt_notify_Click(object sender, RoutedEventArgs e)
+        //    {
+        //        if (chk_cex_usdt_notify.IsChecked == true)
+        //        {
+        //            if (!settings.priceNotifyItem.Contains("cex-usdt"))
+        //            {
+        //                settings.priceNotifyItem.Add("cex-usdt");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (settings.priceNotifyItem.Contains("cex-usdt"))
+        //            {
+        //                settings.priceNotifyItem.Remove("cex-usdt");
+        //            }
+        //        }
+        //        SettingHelper.WriteSettings(settings, password);
+        //    }
 
-        private void chk_cex_eth_notify_Click(object sender, RoutedEventArgs e)
-        {
-            if (chk_cex_eth_notify.IsChecked == true)
-            {
-                if (!settings.priceNotifyItem.Contains("cex-eth"))
-                {
-                    settings.priceNotifyItem.Add("cex-eth");
-                }
-            }
-            else
-            {
-                if (settings.priceNotifyItem.Contains("cex-eth"))
-                {
-                    settings.priceNotifyItem.Remove("cex-eth");
-                }
-            }
-            SettingHelper.WriteSettings(settings, password);
-        }
+        //    private void chk_cex_eth_notify_Click(object sender, RoutedEventArgs e)
+        //    {
+        //        if (chk_cex_eth_notify.IsChecked == true)
+        //        {
+        //            if (!settings.priceNotifyItem.Contains("cex-eth"))
+        //            {
+        //                settings.priceNotifyItem.Add("cex-eth");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (settings.priceNotifyItem.Contains("cex-eth"))
+        //            {
+        //                settings.priceNotifyItem.Remove("cex-eth");
+        //            }
+        //        }
+        //        SettingHelper.WriteSettings(settings, password);
+        //    }
 
-        private void chk_wkbsq_notify_Click(object sender, RoutedEventArgs e)
-        {
-            if (chk_wkbsq_notify.IsChecked == true)
-            {
-                if (!settings.priceNotifyItem.Contains("玩客币社区"))
-                {
-                    settings.priceNotifyItem.Add("玩客币社区");
-                }
-            }
-            else
-            {
-                if (settings.priceNotifyItem.Contains("玩客币社区"))
-                {
-                    settings.priceNotifyItem.Remove("玩客币社区");
-                }
-            }
-            SettingHelper.WriteSettings(settings, password);
-        }
+        //    private void chk_wkbsq_notify_Click(object sender, RoutedEventArgs e)
+        //    {
+        //        if (chk_wkbsq_notify.IsChecked == true)
+        //        {
+        //            if (!settings.priceNotifyItem.Contains("玩客币社区"))
+        //            {
+        //                settings.priceNotifyItem.Add("玩客币社区");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (settings.priceNotifyItem.Contains("玩客币社区"))
+        //            {
+        //                settings.priceNotifyItem.Remove("玩客币社区");
+        //            }
+        //        }
+        //        SettingHelper.WriteSettings(settings, password);
+        //    }
 
-        private void chk_wjw_notify_Click(object sender, RoutedEventArgs e)
-        {
-            if (chk_wjw_notify.IsChecked == true)
-            {
-                if (!settings.priceNotifyItem.Contains("玩家网"))
-                {
-                    settings.priceNotifyItem.Add("玩家网");
-                }
-            }
-            else
-            {
-                if (settings.priceNotifyItem.Contains("玩家网"))
-                {
-                    settings.priceNotifyItem.Remove("玩家网");
-                }
-            }
-            SettingHelper.WriteSettings(settings, password);
-        }
+        //    private void chk_wjw_notify_Click(object sender, RoutedEventArgs e)
+        //    {
+        //        if (chk_wjw_notify.IsChecked == true)
+        //        {
+        //            if (!settings.priceNotifyItem.Contains("玩家网"))
+        //            {
+        //                settings.priceNotifyItem.Add("玩家网");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (settings.priceNotifyItem.Contains("玩家网"))
+        //            {
+        //                settings.priceNotifyItem.Remove("玩家网");
+        //            }
+        //        }
+        //        SettingHelper.WriteSettings(settings, password);
+        //    }
     }
 }
