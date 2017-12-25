@@ -94,8 +94,8 @@ namespace imt_wankeyun_client
         public MainWindow()
         {
             InitializeComponent();
-            web_tongji.Navigating += WebBrowser_Navigating;
-            web_tongji.Source = new Uri("http://wanke.immortalt.com/tool/imt_wankeyun_client/tongji.html");
+            //web_tongji.Navigating += WebBrowser_Navigating;
+            //web_tongji.Source = new Uri("http://wanke.immortalt.com/tool/imt_wankeyun_client/tongji.html");
 
             this.SourceInitialized += delegate (object sender, EventArgs e)//执行拖拽
             {
@@ -2052,7 +2052,7 @@ namespace imt_wankeyun_client
                 if (DateTime.Now.Hour == 9 && DateTime.Now.Minute == 1)
                 {
                     SendDailyNotifyMail();
-                    web_tongji.Refresh();//确保一直挂机检测的客户端也可以做到每日统计一次访问量，而不是只统计第一次打开那天的访问，从而保证访问统计真实性
+                    //web_tongji.Refresh();//确保一直挂机检测的客户端也可以做到每日统计一次访问量，而不是只统计第一次打开那天的访问，从而保证访问统计真实性
                 }
             }
             if (settings.serverchanNotify)
@@ -2060,7 +2060,7 @@ namespace imt_wankeyun_client
                 if (DateTime.Now.Hour == 9 && DateTime.Now.Minute == 1)
                 {
                     SendDailyNotifyServerChan();
-                    web_tongji.Refresh();//确保一直挂机检测的客户端也可以做到每日统计一次访问量，而不是只统计第一次打开那天的访问，从而保证访问统计真实性
+                    //web_tongji.Refresh();//确保一直挂机检测的客户端也可以做到每日统计一次访问量，而不是只统计第一次打开那天的访问，从而保证访问统计真实性
                 }
             }
             if (settings.autoTibi != 0)
